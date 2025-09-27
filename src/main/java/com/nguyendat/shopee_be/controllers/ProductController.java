@@ -2,6 +2,7 @@ package com.nguyendat.shopee_be.controllers;
 
 import com.nguyendat.shopee_be.dto.ProductDto;
 import com.nguyendat.shopee_be.services.ProductService;
+import com.nguyendat.shopee_be.services.ProductServiceImpl;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,8 @@ public class ProductController {
     }
 
     @PostMapping
-    public ProductDto createProduct(@RequestBody ProductDto product) {
+    public ResponseEntity<Product> createProduct(@RequestBody ProductDto productDto) {
+        Product product = productService.addProduct(productDto);
         return null;
 
     }

@@ -1,5 +1,6 @@
 package com.nguyendat.shopee_be.services;
 
+import com.nguyendat.shopee_be.dto.ProductDto;
 import com.nguyendat.shopee_be.entities.Product;
 import com.nguyendat.shopee_be.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
 
     @Override
-    public Product addProduct(Product product) {
+    public Product addProduct(ProductDto product) {
         return null;
     }
 
@@ -23,5 +24,15 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findAll();
         // to-do mapping of product into productDto
         return products;
+    }
+
+    private Product createProducts(ProductDto productDto) {
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setDescription(productDto.getDescription());
+        product.setBrand(productDto.getBrand());
+        product.setNewArrival(productDto.isNewArrival());
+        return product;
     }
 }
