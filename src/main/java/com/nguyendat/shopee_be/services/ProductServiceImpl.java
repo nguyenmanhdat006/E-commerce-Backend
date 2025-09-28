@@ -1,38 +1,89 @@
 package com.nguyendat.shopee_be.services;
 
 import com.nguyendat.shopee_be.dto.ProductDto;
-import com.nguyendat.shopee_be.entities.Product;
+import com.nguyendat.shopee_be.entities.*;
+import com.nguyendat.shopee_be.exceptions.ResourceNotFoundEx;
+import com.nguyendat.shopee_be.mapper.ProductMapper;
 import com.nguyendat.shopee_be.repositories.ProductRepository;
+import com.nguyendat.shopee_be.specification.ProductSpecification;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceImpl implements ProductService{
 
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private ProductMapper productMapper;
+
     @Override
-    public Product addProduct(ProductDto product) {
-        return null;
+    public Product addProduct(ProductDto productDto) {
+        Product product = productMapper.mapToProductEntity(productDto);
+        return productRepository.save(product);
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        // to-do mapping of product into productDto
-        return products;
+    public List<ProductDto> getAllProducts(UUID categoryId, UUID typeId) {
+
+        Specification<Product> productSpecification= Specification.where(null);
+
+        if(null != categoryId){
+            productSpecification = productSpecification.and(ProductSpecification.hasCategoryId(categoryId));
+        }
+        if(null != typeId){
+            productSpecification = productSpecification.and(ProductSpecification.hasCategoryTypeId(typeId));
+        }
+
+        List<Product> products = productRepository.findAll(productSpecification);
+        return productMapper.getProductDtos(products);
     }
 
-    private Product createProducts(ProductDto productDto) {
-        Product product = new Product();
-        product.setName(productDto.getName());
-        product.setPrice(productDto.getPrice());
-        product.setDescription(productDto.getDescription());
-        product.setBrand(productDto.getBrand());
-        product.setNewArrival(productDto.isNewArrival());
-        return product;
+    @Override
+    public ProductDto getProductBySlug(String slug) {
+        Product product= productRepository.findBySlug(slug);
+        if(null == product){
+            throw new ResourceNotFoundEx("Product Not Found!");
+        }
+        ProductDto productDto = productMapper.mapProductToDto(product);
+        productDto.setCategoryId(product.getCategory().getId());
+        productDto.setCategoryTypeId(product.getCategoryType().getId());
+        productDto.setVariants(productMapper.mapProductVariantListToDto(product.getProductVariants()));
+        productDto.setProductResources(productMapper.mapProductResourcesListDto(product.getResources()));
+        return productDto;
     }
+
+    @Override
+    public ProductDto getProductById(UUID id) {
+        Product product= productRepository.findById(id).orElseThrow(()-> new ResourceNotFoundEx("Product Not Found!"));
+        ProductDto productDto = productMapper.mapProductToDto(product);
+        productDto.setCategoryId(product.getCategory().getId());
+        productDto.setCategoryTypeId(product.getCategoryType().getId());
+        productDto.setVariants(productMapper.mapProductVariantListToDto(product.getProductVariants()));
+        productDto.setProductResources(productMapper.mapProductResourcesListDto(product.getResources()));
+        return productDto;
+    }
+
+    @Override
+    public Product updateProduct(ProductDto productDto, UUID id) {
+        Product product= productRepository.findById(id).orElseThrow(()-> new ResourceNotFoundEx("Product Not Found!"));
+        productDto.setId(product.getId());
+        return productRepository.save(productMapper.mapToProductEntity(productDto));
+    }
+
+    @Override
+    public Product fetchProductById(UUID id) throws Exception {
+        return productRepository.findById(id).orElseThrow(BadRequestException::new);
+    }
+
+
 }
