@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+// class chuyển đổi dữ liệu 2 chiều dto->entity(client->server) , ngược lại
 @Component
 public class ProductMapper {
 
@@ -87,6 +87,8 @@ public class ProductMapper {
         return products.stream().map(this::mapProductToDto).toList();
     }
 
+
+    //chuyển đổi entity -> dto
     public ProductDto mapProductToDto(Product product) {
 
         return ProductDto.builder()
@@ -101,6 +103,8 @@ public class ProductMapper {
                 .thumbnail(getProductThumbnail(product.getResources())).build();
     }
 
+
+    //lấy product thumbnail từ Resources
     private String getProductThumbnail(List<Resources> resources) {
         return resources.stream().filter(Resources::getIsPrimary).findFirst().orElse(null).getUrl();
     }
