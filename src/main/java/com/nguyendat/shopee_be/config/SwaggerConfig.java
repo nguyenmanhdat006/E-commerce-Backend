@@ -15,6 +15,6 @@ public class SwaggerConfig {
                 .info(new Info().title("ShopEase API's").description("ShopEase E-commerce Application APIs")
                         .version("1.0")
                         .contact(new Contact()
-                                .name("The CodeReveal")));
+                                .name("The Shopease")));
     }
 }
